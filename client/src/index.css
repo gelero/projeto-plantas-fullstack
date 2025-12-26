@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+@theme {
+  --color-botanico: #1A3C2F;
+  --color-salvia: #709775;
+  --color-terracota: #BC6C4D;
+  /* Um bege/cinza mais fechado para o fundo */
+  --color-creme: #EAE7E0; 
+  
+  --font-sans: 'Inter', system-ui, sans-serif;
+}
