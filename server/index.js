@@ -13,7 +13,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const mongoURI =process.env.MONGO_URI /* 'mongodb+srv://admin:rvyeKRPBneLav5f3@projetoplantas.08nk78c.mongodb.net/ProjetoPlantas?retryWrites=true&w=majority' */;
+const mongoURI =process.env.MONGO_URI;
 
 mongoose.connect(mongoURI)
   .then(() => console.log("✅ CONECTADO AO MONGODB ATLAS"))
@@ -71,8 +71,7 @@ app.post('/api/auth/login', async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ error: "Senha incorreta" });
 
-    // Criar o Token (Vale por 1 dia)
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'secret_key', { expiresIn: '1d' });
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET,{ expiresIn: '7d' });
 
     res.json({ token, user: { nome: user.nome, email: user.email } });
   } catch (err) {
