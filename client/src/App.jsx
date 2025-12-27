@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import api from './api';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import AdicionarPlanta from './pages/AdicionarPlanta';
 
 const getUsuarioInicial = () => {
   const usuarioSalvo = localStorage.getItem('usuario');
@@ -17,6 +18,7 @@ function App() {
   const [usuario, setUsuario] = useState(getUsuarioInicial);
   const [planta, setPlanta] = useState(null);
   const [carregando, setCarregando] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!usuario) {
@@ -94,6 +96,12 @@ function App() {
               </div>
             ) : (
               <div className="min-h-screen bg-verde font-sans text-stone-900 pb-10">
+                <button
+                  onClick={() => navigate('/adicionar')}
+                  className="fixed bottom-8 right-6 z-50 bg-botanico text-white w-14 h-14 rounded-full shadow-2xl shadow-botanico/40 flex items-center justify-center text-3xl hover:scale-110 active:scale-95 transition-all"
+                >
+                  <span className="text-3xl leading-none mb-1">+</span>
+                </button>
                 <button onClick={deslogar} className="absolute top-6 right-6 z-50 bg-white shadow-sm px-4 py-2 rounded-full text-[10px] font-black text-red-500 uppercase tracking-widest hover:bg-red-50">
                   Sair
                 </button>
@@ -120,7 +128,7 @@ function App() {
                     <p className="text-3xl font-medium text-botanico leading-tight">
                       {planta?.statusRega === 'sucesso' ? 'Planta Hidratada!' : 'Aguardando Rega'}
                     </p>
-                    <button 
+                    <button
                       onClick={registrarRega}
                       className="mt-6 w-full bg-botanico text-creme font-bold py-4 rounded-2xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all uppercase tracking-widest text-xs flex items-center justify-center gap-2"
                     >
@@ -162,6 +170,7 @@ function App() {
           )
         }
       />
+      <Route path="/adicionar" element={usuario ? <AdicionarPlanta usuario={usuario} /> : <Navigate to="/login" />} />
       <Route path="*" element={<Navigate to="/login" />} />
     </Routes>
   );

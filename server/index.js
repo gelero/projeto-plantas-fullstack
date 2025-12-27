@@ -9,11 +9,32 @@ import axios from 'axios';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
+import multer from 'multer';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Configuração de armazenamento do Multer
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/'); // Lembre-se de criar a pasta "uploads" na raiz do backend
+  },
+  filename: (req, file, cb) => {
+    // Cria um nome único: data-nomeoriginal.extensao
+    cb(null, `${Date.now()}-${file.originalname}`);
+  }
+});
+
+const upload = multer({ storage });
+
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-const mongoURI =process.env.MONGO_URI;
+const mongoURI = process.env.MONGO_URI;
 
 mongoose.connect(mongoURI)
   .then(() => console.log("✅ CONECTADO AO MONGODB ATLAS"))
@@ -22,7 +43,7 @@ mongoose.connect(mongoURI)
 const PlantaSchema = new mongoose.Schema({
   nome: String,
   especie: String,
-  probabilidade: Number, 
+  probabilidade: Number,
   imagemOriginal: String,
   statusRega: String,
   ultimaRega: Date,
@@ -78,7 +99,7 @@ app.post('/api/auth/login', async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ error: "Senha incorreta" });
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET,{ expiresIn: '7d' });
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
     res.json({ token, user: { nome: user.nome, email: user.email } });
   } catch (err) {
@@ -88,8 +109,6 @@ app.post('/api/auth/login', async (req, res) => {
 
 app.get('/api/planta', async (req, res) => {
   try {
-    // 1. Tenta apagar tudo que existe para limpar o lixo (SÓ PARA TESTE AGORA)
-    // await Planta.deleteMany({}); 
 
     let planta = await Planta.findOne({ nome: "Kalanchoe" });
 
@@ -114,14 +133,42 @@ app.get('/api/planta', async (req, res) => {
   }
 });
 
+app.post('/api/plantas', upload.single('imagem'), async (req, res) => {
+  try {
+    const { nome, especie, userId, statusRega, temperatura, probabilidade } = req.body;
+
+    // Se um arquivo foi enviado, pegamos o caminho dele
+    const imagemCaminho = req.file ? `/uploads/${req.file.filename}` : null;
+
+    const novaPlanta = new Planta({
+      nome,
+      especie,
+      probabilidade: probabilidade || 1,
+      imagemOriginal: imagemCaminho,
+      imagem: imagemCaminho,
+      statusRega: statusRega || "pendente",
+      ultimaRega: new Date(),
+      historico: [],
+      temperatura: temperatura || 0,
+      userId
+    });
+
+    await novaPlanta.save();
+    res.status(201).json({ message: "Planta cadastrada!", dados: novaPlanta });
+  } catch (err) {
+    console.error("Erro ao cadastrar planta:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.post('/api/regar', async (req, res) => {
   try {
     const agora = new Date();
     const planta = await Planta.findOneAndUpdate(
       { nome: "Kalanchoe" }, // Futuramente filtraremos por userId
-      { 
+      {
         $set: { statusRega: "sucesso", ultimaRega: agora },
-        $push: { historico: { $each: [{ data: agora }], $slice: -5 } } 
+        $push: { historico: { $each: [{ data: agora }], $slice: -5 } }
       },
       { new: true }
     );
@@ -138,7 +185,7 @@ app.get('/api/clima', async (req, res) => {
 
     // 1. Chamada para pegar o clima (onde vem a temperatura)
     const urlWeather = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric&lang=pt_br`;
-    
+
     // 2. Chamada para a Geo API (onde vem o nome detalhado da cidade e estado)
     const urlGeo = `http://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${apiKey}`;
 
@@ -153,10 +200,10 @@ app.get('/api/clima', async (req, res) => {
     const iconeCodigo = weatherRes.data.weather[0].icon;
 
     // Enviando para o Frontend
-    res.json({ 
-      temperatura: tempAtual, 
+    res.json({
+      temperatura: tempAtual,
       bairro: bairro,
-      cidade: cidade ,
+      cidade: cidade,
       icone: iconeCodigo
     });
   } catch (error) {
