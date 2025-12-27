@@ -22,6 +22,8 @@ mongoose.connect(mongoURI)
 const PlantaSchema = new mongoose.Schema({
   nome: String,
   especie: String,
+  probabilidade: Number, 
+  imagemOriginal: String,
   statusRega: String,
   ultimaRega: Date,
   historico: [{
