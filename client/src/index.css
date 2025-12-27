@@ -1,11 +1,14 @@
 @import "tailwindcss";
 
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Pinyon+Script&display=swap');
+
 @theme {
-  --color-botanico: #1A3C2F;
-  --color-salvia: #709775;
-  --color-terracota: #BC6C4D;
-  /* Um bege/cinza mais fechado para o fundo */
-  --color-creme: #EAE7E0; 
+  --color-botanico: #2D5A27;
+  --color-salvia: #84A98C;
+  --color-verde: #c4dcc9ff;
+  --color-terracota: #E07A5F;
+  --color-creme: #F8F9FA;
   
-  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-logo: "Cinzel Decorative", serif;
+  --font-detalhe: "Pinyon Script", cursive;
 }

@@ -24,8 +24,13 @@ const PlantaSchema = new mongoose.Schema({
   especie: String,
   statusRega: String,
   ultimaRega: Date,
+  historico: [{
+    data: { type: Date, default: Date.now },
+    tipo: { type: String, default: "Rega Manual" }
+  }],
   temperatura: Number,
-  imagem: String
+  imagem: String,
+  userId: mongoose.Schema.Types.ObjectId // Para ligar a planta ao usuário dono
 });
 
 const Planta = mongoose.model('Planta', PlantaSchema);
@@ -109,9 +114,13 @@ app.get('/api/planta', async (req, res) => {
 
 app.post('/api/regar', async (req, res) => {
   try {
+    const agora = new Date();
     const planta = await Planta.findOneAndUpdate(
-      { nome: "Kalanchoe" },
-      { statusRega: "sucesso", ultimaRega: new Date() },
+      { nome: "Kalanchoe" }, // Futuramente filtraremos por userId
+      { 
+        $set: { statusRega: "sucesso", ultimaRega: agora },
+        $push: { historico: { $each: [{ data: agora }], $slice: -5 } } 
+      },
       { new: true }
     );
     res.json({ message: "Rega registrada!", dados: planta });

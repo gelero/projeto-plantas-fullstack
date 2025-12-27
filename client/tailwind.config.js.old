@@ -1,0 +1,24 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        botanico: '#2D5A27', // Seu verde original
+        salvia: '#84A98C',   // Seu verde claro original
+        terracota: '#E07A5F',
+        verde: '#c4dcc9ff',
+        creme: '#F8F9FA',
+      },
+      fontFamily: {
+        logo: ['"Cinzel Decorative"', 'serif'],
+        detalhe: ['"Pinyon Script"', 'cursive'],
+        sans: ['"Lato"', 'sans-serif'], // Fallback para textos comuns
+      }
+    },
+  },
+  plugins: [],
+}
