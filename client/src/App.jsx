@@ -62,7 +62,7 @@ function App() {
 
   const registrarRega = async () => {
     try {
-      const response = await api.post('/regar', { nome: "Kalanchoe" });
+      const response = await api.post('/regar', { plantaId: planta._id });
       if (response.status === 200) {
         // Agora pegamos os dados atualizados que vêm do backend (com o novo histórico)
         setPlanta(prev => ({
@@ -91,18 +91,18 @@ function App() {
           usuario ? (
             carregando ? (
               <div className="flex flex-col items-center justify-center min-h-screen bg-verde text-botanico">
-                <div className="w-12 h-12 border-4 border-salvia border-t-botanico rounded-full animate-spin"></div>
+                <div className="w-12 h-12 border-4 border-salvia border-t-orange-600 rounded-full animate-spin"></div>
                 <p className="mt-6 font-logo text-xl">Preparando seu Jardim...</p>
               </div>
             ) : (
               <div className="min-h-screen bg-verde font-sans text-stone-900 pb-10">
                 <button
                   onClick={() => navigate('/adicionar')}
-                  className="fixed bottom-8 right-6 z-50 bg-botanico text-white w-14 h-14 rounded-full shadow-2xl shadow-botanico/40 flex items-center justify-center text-3xl hover:scale-110 active:scale-95 transition-all"
+                  className="fixed bottom-8 right-6 z-50 bg-botanico text-white w-14 h-14 rounded-full shadow-2xl shadow-botanico/40 flex items-center justify-center text-3xl hover:scale-110 active:scale-95 transition-all cursor-pointer"
                 >
-                  <span className="text-3xl leading-none mb-1">+</span>
+                  <span className="cursor-pointer text-3xl leading-none mb-1.5">+</span>
                 </button>
-                <button onClick={deslogar} className="absolute top-6 right-6 z-50 bg-white shadow-sm px-4 py-2 rounded-full text-[10px] font-black text-red-500 uppercase tracking-widest hover:bg-red-50">
+                <button onClick={deslogar} className=" cursor-pointer absolute top-6 right-6 z-50 bg-white shadow-sm px-4 py-2 rounded-full text-[10px] font-black text-red-400 uppercase tracking-widest hover:bg-botanico hover:text-white">
                   Sair
                 </button>
 
@@ -111,16 +111,27 @@ function App() {
                   <header className="flex justify-between items-end">
                     <div>
                       <span className="text-[10px] font-black uppercase tracking-[0.3em] text-salvia">Meu Jardim</span>
-                      <h1 className="text-5xl font-logo text-botanico mt-1">{planta?.nome || "Planta"}</h1>
+                      <h1 className="text-3xl font-logo text-botanico mt-1">{planta?.nome || "Planta"}</h1>
                       <p className="text-stone-400 italic text-sm">{planta?.especie}</p>
                     </div>
                     {planta?.temperaturaReal && (
                       <div className="text-right">
-                        <span className="block text-3xl font-light text-terracota">{Math.round(planta.temperaturaReal)}°C</span>
-                        <span className="text-[9px] font-bold uppercase text-stone-400">{planta.bairroReal}</span>
+                        <span className="block text-2xl font-light text-terracota">{Math.round(planta.temperaturaReal)}°C</span>
+                        <span className="block text-[9px] font-bold uppercase mt-1 text-stone-400">{planta.bairroReal}</span>
+                        <span className="block text-[10px] font-bold mt-0.5  uppercase text-stone-500">{planta.cidadeReal}</span>
                       </div>
                     )}
                   </header>
+
+                  {planta?.imagem && (
+                    <div className="w-full aspect-square rounded-[2.5rem] overflow-hidden shadow-2xl border-2 border-white">
+                      <img
+                        src={planta.imagem}
+                        alt={planta.nome}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
 
                   {/* Card de Status e Ação */}
                   <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-stone-200/40 border border-stone-100">
@@ -130,7 +141,7 @@ function App() {
                     </p>
                     <button
                       onClick={registrarRega}
-                      className="mt-6 w-full bg-botanico text-creme font-bold py-4 rounded-2xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all uppercase tracking-widest text-xs flex items-center justify-center gap-2"
+                      className="cursor-pointer mt-6 w-full bg-botanico text-creme font-bold py-4 rounded-2xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all uppercase tracking-widest text-xs flex items-center justify-center gap-2"
                     >
                       💧 Registrar Rega Hoje
                     </button>

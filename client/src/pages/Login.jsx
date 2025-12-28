@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../api';
 import { Link, useNavigate } from 'react-router-dom';
 
 const Login = ({ aoLogar }) => {
@@ -16,7 +16,7 @@ const Login = ({ aoLogar }) => {
         setErro('');
 
         try {
-            const response = await axios.post('http://localhost:3001/api/auth/login', {
+            const response = await api.post('/auth/login', {
                 email,
                 password
             });
@@ -46,7 +46,7 @@ const Login = ({ aoLogar }) => {
                     <span className="block font-detalhe text-5xl text-terracota -mt-3 ml-12 transform -rotate-3">
                         Perfeito
                     </span>
-                    <div className="w-12 h-px bg-terracota/30 mx-auto mt-6"></div>
+                    {/* <div className="w-12 h-px bg-terracota/30 mx-auto mt-6"></div> */}
                 </div>
                 <form onSubmit={handleSubmit} className="space-y-5">
                     {erro && <div className="text-red-500 text-xs font-bold text-center bg-red-50 p-3 rounded-xl">{erro}</div>}
@@ -54,7 +54,7 @@ const Login = ({ aoLogar }) => {
                     <input
                         type="email"
                         placeholder="Seu e-mail"
-                        className="w-full p-3 bg-creme rounded-2xl outline-none focus:ring-1 focus:ring-salvia transition-all"
+                        className="w-full p-3 bg-salvia/12 rounded-2xl outline-none focus:ring-1 focus:ring-salvia transition-all"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
@@ -63,7 +63,7 @@ const Login = ({ aoLogar }) => {
                     <input
                         type="password"
                         placeholder="Sua senha"
-                        className="w-full p-3 bg-creme rounded-2xl outline-none focus:ring-1 focus:ring-salvia transition-all"
+                        className="w-full p-3 bg-salvia/12 rounded-2xl outline-none focus:ring-1 focus:ring-salvia transition-all"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
@@ -72,7 +72,7 @@ const Login = ({ aoLogar }) => {
                     <button
                         type="submit"
                         disabled={carregando}
-                        className="w-full bg-botanico hover:bg-[#1f3d1a] text-creme font-bold py-4 rounded-2xl transition-all shadow-lg shadow-botanico/20 uppercase tracking-widest text-xs"
+                        className="w-full bg-botanico hover:bg-[#1f3d1a] text-creme font-bold py-4 rounded-2xl transition-all shadow-lg shadow-botanico/20 uppercase tracking-widest cursor-pointer text-xs"
                     >
                         {carregando ? 'Sincronizando...' : 'Entrar no Jardim'}
                     </button>

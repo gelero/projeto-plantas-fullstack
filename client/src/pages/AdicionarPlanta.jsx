@@ -22,12 +22,23 @@ const AdicionarPlanta = ({ usuario }) => {
     e.preventDefault();
     setCarregando(true);
 
-    // IMPORTANTE: Para enviar arquivos, usamos FormData em vez de JSON comum
+    // Tenta pegar o ID da prop, se não existir, tenta do localStorage
+    const storageUser = JSON.parse(localStorage.getItem('usuario'));
+    const idFinal = usuario?.id || usuario?._id || storageUser?.id || storageUser?._id;
+
     const formData = new FormData();
     formData.append('nome', nome);
     formData.append('especie', especie);
-    formData.append('userId', usuario.id || usuario._id); // Pegando ID do usuário logado
+    
+    if (idFinal) {
+      formData.append('userId', idFinal);
+    } else {
+      console.warn("⚠️ Nenhum ID de usuário encontrado no envio.");
+    }
+
     if (imagem) formData.append('imagem', imagem);
+
+    // ... restante do código (try/catch) igual
 
     try {
       await api.post('/plantas', formData, {
@@ -46,7 +57,7 @@ const AdicionarPlanta = ({ usuario }) => {
   return (
     <div className="min-h-screen bg-creme p-6 flex flex-col items-center">
       <header className="w-full max-w-md mb-10">
-        <button onClick={() => navigate('/')} className="text-botanico font-bold">← Voltar</button>
+        <button onClick={() => navigate('/')} className="cursor-pointer text-botanico font-bold">← Voltar</button>
         <h2 className="text-3xl font-logo text-botanico mt-4">Nova Planta</h2>
       </header>
 
@@ -62,7 +73,7 @@ const AdicionarPlanta = ({ usuario }) => {
             type="file" 
             accept="image/*" 
             onChange={handleFileChange} 
-            className="text-xs text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:bg-salvia file:text-white"
+            className="text-xs text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:bg-salvia file:text-white cursor-pointer"
           />
         </div>
 
@@ -71,7 +82,7 @@ const AdicionarPlanta = ({ usuario }) => {
           <input 
             type="text" 
             placeholder="Dê um nome (ex: Filó)" 
-            className="w-full p-4 rounded-2xl border border-stone-200 focus:outline-salvia"
+            className="bg-salvia/12 w-full p-4 rounded-2xl border border-stone-200 focus:outline-salvia "
             value={nome}
             onChange={(e) => setNome(e.target.value)}
             required
@@ -79,7 +90,7 @@ const AdicionarPlanta = ({ usuario }) => {
           <input 
             type="text" 
             placeholder="Espécie (Opcional)" 
-            className="w-full p-4 rounded-2xl border border-stone-200 focus:outline-salvia"
+            className=" bg-salvia/12 w-full p-4 rounded-2xl border border-stone-200 focus:outline-salvia"
             value={especie}
             onChange={(e) => setEspecie(e.target.value)}
           />
@@ -87,7 +98,7 @@ const AdicionarPlanta = ({ usuario }) => {
 
         <button 
           disabled={carregando}
-          className="w-full bg-botanico text-white py-4 rounded-2xl font-bold uppercase tracking-widest shadow-lg shadow-botanico/20"
+          className="w-full bg-botanico text-white py-4 rounded-2xl font-bold uppercase tracking-widest shadow-lg shadow-botanico/20 cursor-pointer"
         >
           {carregando ? "Salvando..." : "Cadastrar no Jardim"}
         </button>

@@ -12,9 +12,22 @@ import jwt from 'jsonwebtoken';
 import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
+
+import { v2 as cloudinary } from 'cloudinary';
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir);
+}
 
 // Configuração de armazenamento do Multer
 const storage = multer.diskStorage({
@@ -101,7 +114,7 @@ app.post('/api/auth/login', async (req, res) => {
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
-    res.json({ token, user: { nome: user.nome, email: user.email } });
+    res.json({ token, user: { id: user._id, nome: user.nome, email: user.email } });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -109,21 +122,10 @@ app.post('/api/auth/login', async (req, res) => {
 
 app.get('/api/planta', async (req, res) => {
   try {
-
-    let planta = await Planta.findOne({ nome: "Kalanchoe" });
+    const planta = await Planta.findOne().sort({ _id: -1 });
 
     if (!planta) {
-      console.log("⚠️ Planta não encontrada. Criando nova...");
-      planta = new Planta({
-        nome: "Kalanchoe",
-        especie: "Flor-da-fortuna",
-        statusRega: "pendente",
-        ultimaRega: new Date(),
-        temperatura: 32,
-        imagem: "https://images.unsplash.com/photo-1509423350716-97f9360b4e09?w=500"
-      });
-      await planta.save();
-      console.log("✨ Nova planta salva com sucesso no banco!");
+      return res.status(404).json({ message: "Nenhuma planta cadastrada ainda." });
     }
 
     res.json(planta);
@@ -137,41 +139,53 @@ app.post('/api/plantas', upload.single('imagem'), async (req, res) => {
   try {
     const { nome, especie, userId, statusRega, temperatura, probabilidade } = req.body;
 
-    // Se um arquivo foi enviado, pegamos o caminho dele
-    const imagemCaminho = req.file ? `/uploads/${req.file.filename}` : null;
+    let imagemUrl = "https://images.unsplash.com/photo-1509423350716-97f9360b4e09?w=500";
+
+    if (req.file) {
+      // 1. Envia o arquivo para o Cloudinary
+      const uploadRes = await cloudinary.uploader.upload(req.file.path, {
+        folder: 'meu-jardim',
+      });
+
+      imagemUrl = uploadRes.secure_url;
+      fs.unlinkSync(req.file.path);
+    }
 
     const novaPlanta = new Planta({
       nome,
       especie,
       probabilidade: probabilidade || 1,
-      imagemOriginal: imagemCaminho,
-      imagem: imagemCaminho,
+      imagemOriginal: imagemUrl,
+      imagem: imagemUrl,
       statusRega: statusRega || "pendente",
       ultimaRega: new Date(),
       historico: [],
       temperatura: temperatura || 0,
-      userId
+      userId: (userId && userId !== "undefined") ? userId : null
     });
 
     await novaPlanta.save();
-    res.status(201).json({ message: "Planta cadastrada!", dados: novaPlanta });
+    res.status(201).json({ message: "Planta cadastrada com sucesso!", dados: novaPlanta });
   } catch (err) {
-    console.error("Erro ao cadastrar planta:", err);
-    res.status(500).json({ error: err.message });
+    console.error("❌ Erro no upload/cadastro:", err);
+    res.status(500).json({ error: "Erro ao processar imagem ou salvar planta." });
   }
 });
 
 app.post('/api/regar', async (req, res) => {
   try {
+    const { plantaId } = req.body; // Recebe o ID vindo do App.jsx
     const agora = new Date();
-    const planta = await Planta.findOneAndUpdate(
-      { nome: "Kalanchoe" }, // Futuramente filtraremos por userId
+
+    const planta = await Planta.findByIdAndUpdate(
+      plantaId,
       {
         $set: { statusRega: "sucesso", ultimaRega: agora },
         $push: { historico: { $each: [{ data: agora }], $slice: -5 } }
       },
       { new: true }
     );
+
     res.json({ message: "Rega registrada!", dados: planta });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -212,4 +226,7 @@ app.get('/api/clima', async (req, res) => {
   }
 });
 
-app.listen(3001, () => console.log("🚀 Servidor em http://localhost:3001"));
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Servidor rodando na porta ${PORT}`);
+});

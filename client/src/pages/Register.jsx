@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../api'
 import { useNavigate, Link } from 'react-router-dom';
 
 const Register = () => {
@@ -16,12 +16,11 @@ const Register = () => {
         setErro('');
 
         try {
-            await axios.post('http://localhost:3001/api/auth/register', {
+            await api.post('/auth/register', {
                 nome,
                 email,
                 password
             });
-            // Após cadastrar, envia para o login
             navigate('/login');
         } catch (err) {
             setErro(err.response?.data?.error || 'Erro ao criar conta');
@@ -52,7 +51,7 @@ const Register = () => {
                     <input
                         type="text"
                         placeholder="Seu Nome"
-                        className="w-full p-4 bg-creme rounded-2xl outline-none focus:ring-2 focus:ring-salvia transition-all"
+                        className="w-full p-4 bg-salvia/12 rounded-2xl outline-none focus:ring-2 focus:ring-salvia transition-all"
                         value={nome}
                         onChange={(e) => setNome(e.target.value)}
                         required
@@ -61,7 +60,7 @@ const Register = () => {
                     <input
                         type="email"
                         placeholder="E-mail"
-                        className="w-full p-4 bg-creme rounded-2xl outline-none focus:ring-2 focus:ring-salvia transition-all"
+                        className="w-full p-4 bg-salvia/12 rounded-2xl outline-none focus:ring-2 focus:ring-salvia transition-all"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
@@ -70,7 +69,7 @@ const Register = () => {
                     <input
                         type="password"
                         placeholder="Escolha uma Senha"
-                        className="w-full p-4 bg-creme rounded-2xl outline-none focus:ring-2 focus:ring-salvia transition-all"
+                        className="w-full p-4 bg-salvia/12 rounded-2xl outline-none focus:ring-2 focus:ring-salvia transition-all"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
@@ -79,7 +78,7 @@ const Register = () => {
                     <button
                         type="submit"
                         disabled={carregando}
-                        className="w-full bg-botanico hover:bg-[#1f3d1a] text-creme font-bold py-4 rounded-2xl transition-all shadow-lg shadow-botanico/20 uppercase tracking-widest text-xs"
+                        className="w-full bg-botanico hover:bg-[#1f3d1a] cursor-pointer text-creme font-bold py-4 rounded-2xl transition-all shadow-lg shadow-botanico/20 uppercase tracking-widest text-xs"
                     >
                         {carregando ? 'Semeando...' : 'Criar minha conta'}
                     </button>
